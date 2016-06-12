@@ -18,15 +18,19 @@ class wordpress::install {
 
   exec { 'download-wordpress': #tee hee
     command => '/usr/bin/wget http://wordpress.org/latest.tar.gz',
-    cwd     => '/vagrant/',
-    creates => '/vagrant/latest.tar.gz'
+    cwd     => '/home/vagrant/',
+    creates => '/home/vagrant/latest.tar.gz'
+  }
+
+  exec { 'delete-index':
+    command => '/bin/rm /var/www/index.html'
   }
 
   exec { 'untar-wordpress':
-    cwd     => '/vagrant/',
-    command => '/bin/tar xzvf /vagrant/latest.tar.gz',
+    cwd     => '/var/www/',
+    command => '/bin/tar --strip-components=1 -xzf /home/vagrant/latest.tar.gz && touch /home/vagrant/wp-extracted',
     require => Exec['download-wordpress'],
-    creates => '/vagrant/wordpress',
+    creates => '/home/vagrant/wp-extracted',
   }
 
   # Import a MySQL database for a basic wordpress site.
@@ -40,7 +44,7 @@ class wordpress::install {
   }
 
   # Copy a working wp-config.php file for the vagrant setup.
-  file { '/vagrant/wordpress/wp-config.php':
+  file { '/var/www/wp-config.php':
     source => 'puppet:///modules/wordpress/wp-config.php'
   }
   
@@ -56,7 +60,7 @@ class wordpress::install {
   }
 
   # Copy a working wp-tests-config.php file for the vagrant setup.
-  file { '/vagrant/wordpress/wp-tests-config.php':
+  file { '/var/www/wp-tests-config.php':
     source => 'puppet:///modules/wordpress/wp-tests-config.php'
   }
 }
